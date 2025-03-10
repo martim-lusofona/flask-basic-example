@@ -44,7 +44,7 @@ sudo systemctl start flask
 cat <<EOF > /etc/nginx/sites-available/flask
 server {
     listen 80;
-    server_name ${server_ip};
+    server_name ${server_ip} ${server_domain};
 
     location / {
         proxy_pass http://127.0.0.1:5000;
