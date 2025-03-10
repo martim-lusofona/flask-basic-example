@@ -1,8 +1,14 @@
+#!/bin/bash
 
-apt update && apt install -y python3 python3-pip nginx certbot python3-certbot-nginx
+sudo apt update && sudo apt install -y python3 python3-venv python3-pip nginx certbot python3-certbot-nginx
 
-pip3 install flask gunicorn
 mkdir -p /opt/flask-app
+cd /opt/flask-app
+
+python3 -m venv venv
+source venv/bin/activate
+pip install --upgrade pip
+pip install flask gunicorn
 
 cat <<EOF > /opt/flask-app/app.py
 from flask import Flask
@@ -24,17 +30,16 @@ After=network.target
 [Service]
 User=root
 WorkingDirectory=/opt/flask-app
-ExecStart=/usr/bin/gunicorn --bind 0.0.0.0:5000 app:app
+ExecStart=/opt/flask-app/venv/bin/gunicorn --bind 0.0.0.0:5000 app:app
 Restart=always
 
 [Install]
 WantedBy=multi-user.target
 EOF
 
-systemctl daemon-reload
-systemctl enable flask
-systemctl start flask
-
+sudo systemctl daemon-reload
+sudo systemctl enable flask
+sudo systemctl start flask
 
 cat <<EOF > /etc/nginx/sites-available/flask
 server {
@@ -51,4 +56,4 @@ server {
 EOF
 
 ln -s /etc/nginx/sites-available/flask /etc/nginx/sites-enabled
-systemctl restart nginx
+sudo systemctl restart nginx
